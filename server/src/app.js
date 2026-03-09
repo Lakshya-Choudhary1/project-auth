@@ -49,12 +49,10 @@ app.use(passport.initialize())
 app.use(passport.session());
 app.use("/api",mainRouter)
 
-// Serve static files from the build folder
-app.use(express.static(path.join(__dirname, "..", "..", "client", "dist")));
-
+app.use(express.static(path.join(__dirname,"..","public",)))
 // Serve index.html for all other GET requests (React Router support)
-app.get(/.*/,(req, res) => {
-  res.sendFile(path.join(__dirname, "..", "..", "client", "dist", "index.html"));
+app.use("/",(req, res) => {
+  res.sendFile(path.join(__dirname,"..","public","index.html"));
 });
 
 
