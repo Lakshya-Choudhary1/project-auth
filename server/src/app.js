@@ -50,12 +50,13 @@ app.use(passport.session());
 app.use("/api",mainRouter)
 
 
-app.use(express.static(path.join(__dirname , "../", "public")));
-app.get("/test",(req,res)=>{
-     return res.send("successfull")
-})
+app.use(express.static(path.join(__dirname ,"../" , "../", "/client/dist")));
 app.get("/",(req,res)=>{
-     res.sendFile(path.join(__dirname,"../", "public", "index.html"));
+     res.sendFile(path.resolve(__dirname , "../", "client", "dist", "index.html"));
 })
+
+
+
+
 
 export default app;
