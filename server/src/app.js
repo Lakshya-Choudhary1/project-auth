@@ -27,7 +27,7 @@ app.use(cors({
           }
           callback(new Error("CORS ERROR: Origin not allowed"));
      },
-     Credentials:true
+     credentials:true
 }))
 app.use(urlencoded({extended:true,limit:"10mb"}));
 app.use(json({limit:"10mb"}))
@@ -49,10 +49,10 @@ app.use(passport.initialize())
 app.use(passport.session());
 app.use("/api",mainRouter)
 
-app.use(express.static(path.join(__dirname,"..","public",)))
+app.use(express.static(path.join(__dirname,"../public")))
 // Serve index.html for all other GET requests (React Router support)
-app.get("/",(req, res) => {
-  res.sendFile(path.join(__dirname,"..","public","index.html"));
+app.use("/",(req, res) => {
+     return res.sendFile(path.join(__dirname,"../public/index.html"));
 });
 
 
