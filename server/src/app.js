@@ -49,11 +49,18 @@ app.use(passport.initialize())
 app.use(passport.session());
 app.use("/api",mainRouter)
 
-app.use(express.static(path.join(__dirname,"../public")))
-// Serve index.html for all other GET requests (React Router support)
-app.use("/",(req, res) => {
+app.get('/test',(req,res)=>{
+     return res.send("success");
+})
+
+if(process.env.NODE_ENV == "production"){
+     app.use(express.static(path.join(__dirname,"../public")))
+     // Serve index.html for all other GET requests (React Router support)
+     app.use("/",(req, res) => {
      return res.sendFile(path.join(__dirname,"../public/index.html"));
 });
+}
+
 
 
 

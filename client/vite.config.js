@@ -6,8 +6,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),tailwindcss()],
   base:"/",
-  build:{
-    outDir: "../server/public",
-    emptyOutDir:true
+  build: {
+    outDir: path.resolve(__dirname, "../server/public"), //  output to server/public
+    emptyOutDir: true, // cleans old files before building
   }
 })
