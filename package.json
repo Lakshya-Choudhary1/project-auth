@@ -4,17 +4,33 @@
   "description": "",
   "main": "./server/src/index.js",
   "scripts": {
-    "start": "npm run start --prefix ./server",
-    "build" : "npm install && npm install --prefix ./server && npm install --prefix ./client && npm run build --prefix ./client"
+    "dev":"nodemon ./server/src/index.js",
+    "start": "node ./server/src/index.js",
+    "build" : "npm install && npm install --prefix ./client && npm run build --prefix ./client"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Lakshya-Choudhary1/project-auth.git"
   },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.2.4",
+    "nodemon": "^3.1.14",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/Lakshya-Choudhary1/project-auth/issues"
   },
