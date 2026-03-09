@@ -27,7 +27,7 @@ app.use(cors({
           }
           callback(new Error("CORS ERROR: Origin not allowed"));
      },
-     Credential:true
+     Credentials:true
 }))
 app.use(urlencoded({extended:true,limit:"10mb"}));
 app.use(json({limit:"10mb"}))
@@ -51,7 +51,7 @@ app.use("/api",mainRouter)
 
 app.use(express.static(path.join(__dirname,"..","public",)))
 // Serve index.html for all other GET requests (React Router support)
-app.use("/",(req, res) => {
+app.get("/",(req, res) => {
   res.sendFile(path.join(__dirname,"..","public","index.html"));
 });
 
