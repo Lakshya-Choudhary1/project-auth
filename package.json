@@ -1,0 +1,22 @@
+{
+  "name": "project-auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./server/src/index.js",
+  "scripts": {
+    "start": "npm run start --prefix ./server",
+    "build" : "npm install && npm install --prefix ./server && npm install --prefix ./client && npm run build --prefix ./client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lakshya-Choudhary1/project-auth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Lakshya-Choudhary1/project-auth/issues"
+  },
+  "homepage": "https://github.com/Lakshya-Choudhary1/project-auth#readme"
+}
