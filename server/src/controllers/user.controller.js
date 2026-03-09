@@ -130,7 +130,7 @@ export const forgotPasswordController = async(req,res)=>{
                return res.status(401).json({message:"User Not Found."})
           }
 
-          const uri = process.env.CLIENT_URL;
+          const uri = process.env.NODE_ENV === "development" ? 'http://localhost:5173' : process.env.CLIENT_URL ;
           const link = `${uri}/resetPassword/${resetToken}`;
           
           // sendResetLink(email,link);
@@ -183,7 +183,7 @@ export const resetPasswordController = async(req,res)=>{
 export const updateProfilePicController = async(req,res)=>{
      try{
           const userId  =  req.user._id;
-          const profilePic = req.file.value
+
 
      }catch(err){
           console.error("updateProfilePic error:", err);
