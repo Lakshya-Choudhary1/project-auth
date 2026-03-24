@@ -6,9 +6,9 @@ import{   loginController,
           verifyEmailController,
           forgotPasswordController,
           resetPasswordController,
-          updateProfilePicController,
           checkAuthController,
-          logoutController
+          logoutController,
+          resendSignUpToken
      } from "../../controllers/user.controller.js"
 
 import verifyUser from "../../middleware/verifyUser.js"
@@ -18,16 +18,21 @@ userRouter.get("/test",(req,res)=>{
      res.send("text-successfull")
 })
 
-userRouter.post("/login",loginController);
-userRouter.post("/signup",signupController);
-userRouter.post("/verify-email",verifyEmailController);
-userRouter.post("/forgot-password",forgotPasswordController);
-userRouter.post("/reset-password/:resetToken",resetPasswordController);
+userRouter.post("/login",loginController);//works
 
-userRouter.put("/update-profilePic/",verifyUser,updateProfilePicController);
+userRouter.post("/signup",signupController);//works
+userRouter.post("/resendSignupToken",resendSignUpToken);//works
 
-userRouter.get("/check-auth",verifyUser,checkAuthController);
-userRouter.get('/logout',logoutController)
+userRouter.post("/verifyEmail",verifyEmailController);//works
+
+userRouter.post("/forgotPassword",forgotPasswordController);//works
+
+
+userRouter.post("/resetPassword",resetPasswordController);
+
+userRouter.get("/checkAuth",verifyUser,checkAuthController);//works
+
+userRouter.get('/logout',logoutController)//works
 
 userRouter.get(
     "/oauth/google",
@@ -38,7 +43,8 @@ userRouter.get(
      "/oauth/google/callback",
      passport.authenticate("google", { failureRedirect: "/login", session: true }),
      (req,res)=>{
-          res.redirect("/")
+          
+         return res.redirect("/")
      }
 )
 

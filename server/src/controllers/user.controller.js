@@ -3,6 +3,7 @@ import bcrypt  from "bcrypt";
 import crypto from "crypto"
 import generateJwtToken from "../util/generateJwtToken.js"
 import setCookie from "../util/setCookie.js"
+import {sendEmailVerification,sendResetPasswordLink} from "../mailServices/nodeMailer.js"
 
 export const loginController = async(req,res)=>{
      try{
@@ -24,13 +25,17 @@ export const loginController = async(req,res)=>{
                return res.status(401).json({message:"Invalid Credantial"})
           }
 
-          user.password = null;
-          
-          //generate token and set cookie
+          if(!user.emailVerified){
+               return res.status(403).json({message:"Please verify your email first"});
+          }
+
+           //generate token and set cookie
           const jwtToken = generateJwtToken(user._id);
           setCookie(res,jwtToken);
 
-          return res.status(200).json({user,message:"Login Successfull"});
+          const {password:_ , ...userData} = user.toObject();
+          
+          return res.status(200).json({user:userData,message:"Login Successfull"});
 
      }catch(err){
           console.error("Login error:", err);
@@ -38,25 +43,32 @@ export const loginController = async(req,res)=>{
      }
 }
 
-export const logoutController = async(req,res)=>{
+export const logoutController = async (req,res)=>{
      try{
-          //clear cookie
+
+          // clear JWT cookie
           res.clearCookie(process.env.JWT_TOKEN_NAME);
 
-          if(req.logout){
-               req.logout((err)=>{
-                    console.log("Req logout error",error)
-               });
-          }
-          
-          //clear session
-          if(req.session){
-               req.session.destroy(err=>{
-                    console.log("Session Destroy error : " , err);
+          // logout passport session only if it exists
+          if(req.user && req.logout){
+               req.logout(function(err){
+                    if(err){
+                         console.log("Logout error:",err);
+                    }
                });
           }
 
-          return res.status(200).json({message:"Logout successFull"})
+          // destroy session if it exists
+          if(req.session){
+               req.session.destroy((err)=>{
+                    if(err){
+                         console.log("Session destroy error:",err);
+                    }
+               });
+          }
+
+          return res.status(200).json({message:"Logout successful"});
+
      }catch(err){
           console.error("Logout error:", err);
           return res.status(500).json({ message: "Server error during logout" });
@@ -77,7 +89,7 @@ export const signupController = async(req,res)=>{
                return res.status(409).json({message:"User Already Exists"});
           }
 
-          const hashedPassword = await bcrypt.hash(password,process.SALT_ROUND);
+          const hashedPassword = await bcrypt.hash(password,Number(process.env.SALT_ROUND));
           const token = Math.floor(100000+(Math.random()*900000)).toString();
 
           const user = await userModel.create({     
@@ -85,10 +97,10 @@ export const signupController = async(req,res)=>{
                email,
                password:hashedPassword,
                emailVerificationToken:token,
-               emailVerificationTokenExpiry: new Date(Date.now()+(1000*60*2))
+               emailVerificationTokenExpiry: new Date(Date.now()+(1000*60*10))
           })
 
-          // sendTokenToEmail(email,token);
+          await sendEmailVerification(email,fullName,token);
 
           //generate token and set cookie
           const jwtToken = generateJwtToken(user._id);
@@ -104,11 +116,48 @@ export const signupController = async(req,res)=>{
      }
 }
 
+export const resendSignUpToken = async(req,res) =>{
+     try{
+          const {email} = req.body;
+
+          if(!email){
+               return res.status(400).json({message:"Email missing."})
+          }
+
+          const user = await userModel.findOne({email});
+
+          if(!user){
+               return res.status(400).json({message:"User Not Found"})
+          }
+
+          if(user.emailVerified){
+               return res.status(400).json({message:"Already verified"});
+          }
+
+          if(user.emailVerificationTokenExpiry > Date.now()){
+               return res.status(400).json({message:"Token already sent. Please wait before requesting again."});
+          }
+
+          const token  = Math.floor(100000+(Math.random()*900000)).toString();
+          
+          user.emailVerificationToken = token;
+          user.emailVerificationTokenExpiry = new Date(Date.now()+(1000*60*10));
+          
+          await user.save();
+
+          await sendEmailVerification(email,user.fullName,token);
+
+          return res.status(200).json({ message: "Token successfully send" });
+
+     }catch(err){
+          console.error("resendSignUp error:", err);
+          return res.status(500).json({ message: "Server error during resendSignUpToken" });
+     }
+}
+
 export const checkAuthController = async(req,res)=>{
-     //generate token and set cookie
-          const token = generateJwtToken(req.user._id);
-          setCookie(res,token);
-     return res.status(201).json({user:req.user,message:"Successfull Login."})
+          const { password:_, ...userData } = req.user.toObject();
+          return res.status(200).json({user: userData,message: "Authenticated"})
 }
 
 export const forgotPasswordController = async(req,res)=>{
@@ -123,17 +172,14 @@ export const forgotPasswordController = async(req,res)=>{
 
           const user =  await userModel.findOneAndUpdate({email},{
                passwordResetToken:resetToken,
-               passwordResetTokenExpiry: new Date(Date.now()+(1000*60*2))
+               passwordResetTokenExpiry: new Date(Date.now()+(1000*60*10))
           })
 
           if(!user){
                return res.status(401).json({message:"User Not Found."})
           }
-
-          const uri = process.env.NODE_ENV === "development" ? 'http://localhost:5173' : process.env.CLIENT_URL ;
-          const link = `${uri}/resetPassword/${resetToken}`;
           
-          // sendResetLink(email,link);
+          await sendResetPasswordLink(email,resetToken);
 
           return res.status(200).json({message:"Forgot Link Send To Email."})
 
@@ -145,11 +191,14 @@ export const forgotPasswordController = async(req,res)=>{
 
 export const resetPasswordController = async(req,res)=>{
      try{
-          const {resetToken} = req.params;
-          const {password} = req.body;
+          const {password,resetToken} = req.body;
 
           if(!resetToken){
                return res.status(400).json({message:"No token exists"});
+          }
+
+          if(!password){
+               return res.status(400).json({message:"Password Not exists"});
           }
 
           if(password.length<6){
@@ -165,7 +214,7 @@ export const resetPasswordController = async(req,res)=>{
                return res.status(401).json({message:"Expired Token"});
           }
 
-          const hashedPassword = await bcrypt.hash(password,process.env.SALT_ROUND);
+          const hashedPassword = await bcrypt.hash(password,Number(process.env.SALT_ROUND));
 
           user.password  = hashedPassword;
           user.passwordResetToken = null;
@@ -180,24 +229,31 @@ export const resetPasswordController = async(req,res)=>{
      }
 }
 
-export const updateProfilePicController = async(req,res)=>{
-     try{
-          const userId  =  req.user._id;
-
-
-     }catch(err){
-          console.error("updateProfilePic error:", err);
-          return res.status(500).json({ message: "Server error during updateProfilePic" });
-     }
-}
-
 export const verifyEmailController = async(req,res)=>{
      try{
+          const {emailVerificationToken} = req.body;
+
+          if( !emailVerificationToken || emailVerificationToken.length < 6){
+               return res.status(400).json({message:"Invalud Credentails"});
+          }
+          const user = await userModel.findOne({
+               emailVerificationToken,
+               emailVerificationTokenExpiry:{$gt:Date.now()}
+          }).select("-password");
+
+          if(!user){
+               return res.status(400).json({message:"Invalid Credentails"});
+          }
+
+          user.emailVerificationToken = undefined;
+          user.emailVerificationTokenExpiry = undefined;
+          user.emailVerified = true;
+          await user.save();
+
+          return res.status(200).json({user,message:"Email verified SuccessFully"});
 
      }catch(err){
           console.error("verifyEmail error:", err);
           return res.status(500).json({ message: "Server error during verifyEmail" });
      }
 } 
-
-

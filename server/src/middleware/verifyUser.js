@@ -2,36 +2,44 @@ import jwt from "jsonwebtoken";
 import userModel from "../models/user.model.js";
 
 const verifyUser = async (req, res, next) => {
-     try {
-          let user = null;
+  try {
+    console.log("isAuthenticated:", req.isAuthenticated?.());
+    console.log("req.user:", req.user);
+    console.log("sessionID:", req.sessionID);
+    console.log("cookies:", req.cookies);
 
-          // user from session;
-          if(req.isAuthenticated()){//user is attached by passpost.session to req in 
-               return next();
-          }else if(req.cookies?.[process.env.JWT_TOKEN_NAME]){//user from cookie
-               try{
-                    const token = req.cookies[process.env.JWT_TOKEN_NAME];
-                    const decode = jwt.verify(token,process.env.JWT_SECRET);
-                    user = await userModel.findById(decode.userId).select("-password");
+    // Passport session-based auth
+    if (req.isAuthenticated?.() && req.user) {
+      return next();
+    }
 
-               }catch(err){
-                    console.log("JWT Error:", err.message);
-                    return res.status(401).json({ message: "Invalid or expired token" });
-               }
-          }
+    // JWT-based auth
+    const token = req.cookies?.[process.env.JWT_TOKEN_NAME];
 
-          if(!user){
-               return res.status(401).json({ message: "Unauthorized: No user found" });
-          }
+    if (!token) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
 
-          req.user = user;
-          next();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-     } catch (error) {
-          return res.status(401).json({
-               message: "INVALID OR EXPIRED TOKEN"
-          });
-     }
+    const user = await userModel.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    console.log("verifyUser error:", error);
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
 };
 
 export default verifyUser;

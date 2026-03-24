@@ -16,6 +16,7 @@ const start = async()=>{
           app.listen(PORT,()=>{
           console.log("SERVER IS RUNNING ON PORT : " , PORT);
           })
+
      }catch(error){
           console.log(error);
      }

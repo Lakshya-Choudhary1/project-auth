@@ -19,15 +19,7 @@ const userSchema = new mongoose.Schema({
           minlength:6,
           trim:true,
      },
-     profilePic:{
-          type:String,
-          default:""
-     },
-     lastLogin:{
-          type:Date,
-          default: Date.now
-     },
-     emailVerification:{
+     emailVerified:{
           type:Boolean,
           default:false
      },

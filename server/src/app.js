@@ -18,7 +18,22 @@ const whitelist_urls = process.env.WHITELIST_URLS
   ? process.env.WHITELIST_URLS.replace(/[\[\]\s]/g, "").split(",")
   : [];
 
-app.use(helmet());
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "ws://localhost:5173"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  })
+);
 app.use(cors({
      origin:(origin,callback)=>{
           if(!origin) return callback(null,true);
@@ -37,10 +52,10 @@ app.use(session({
      secret:process.env.SESSION_SECRET,
      resave:false,
      saveUninitialized:false,
-     cookie: {
+     cookie:{
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days,
         sameSite: "lax"
     }
 }))
@@ -53,16 +68,17 @@ app.get('/test',(req,res)=>{
      return res.send("success");
 })
 
-
-if(process.env.NODE_ENV == "production"){
+if(process.env.NODE_ENV === 'production'){
      app.use(express.static(path.join(__dirname,"../public")))
-     // Serve index.html for all other GET requests (React Router support)
      app.use("/",(req, res) => {
      return res.sendFile(path.join(__dirname,"../public/index.html"));
-});
+     })
 }
 
-
+app.use(express.static(path.join(__dirname,"../public")))
+     app.use("/",(req, res) => {
+     return res.sendFile(path.join(__dirname,"../public/index.html"));
+     })
 
 
 

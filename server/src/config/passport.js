@@ -3,10 +3,13 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import userModel from "../models/user.model.js";
 import dotenv from 'dotenv'
 dotenv.config();
+
+const CALLBACK = process.env.NODE_ENV === "development" ? process.env.GOOGLE_CALLBACK_URL_DEV : process.env.GOOGLE_CALLBACK_URL_PROD
+
 passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     clientID: process.env.GOOGLE_CLIENT_ID,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL
+    callbackURL: CALLBACK
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         
@@ -18,8 +21,8 @@ passport.use(new GoogleStrategy({
                 fullName: profile.displayName,
                 email,
                 profilePic: profile.photos[0].value,
-                emailVerification: true,
-                password:"google"
+                emailVerified: true,
+                password:`google${profile.id}`
             });
         }
 
