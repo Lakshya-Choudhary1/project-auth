@@ -6,7 +6,7 @@ export const useUserStore = create((set,get)=>({
 
      user:null,
      isLoading:false,
-     isCheckingAuth:true,
+     isCheckingAuth:false,
 
      login: async({email,password})=>{
          try {
@@ -18,25 +18,26 @@ export const useUserStore = create((set,get)=>({
          }
      },
 
-     checkAuth: async()=>{
-          set({isCheckingAuth:false})
-          try {
-               const res = await axiosInstance.get("/user/checkAuth");
-
-               if(!res.data.user){
-                    toast.error("no user found")
-                    return;
-               }
-               console.log(res.data.user)
-               set({user:res.data.user})
-               toast.success("hii user")
+     checkAuth: async () => {
+           set({ isCheckingAuth: true });
                
-               return;
-         } catch (error) {
-               console.log(error)
-               return ;
-         }
-     }
+           try {
+           const res = await axiosInstance.get("/user/checkAuth");
+          
+           if (!res.data.user) {
+             set({ user: null });
+             return;
+           }
+      
+           console.log("checkAuth user :", res.data.user);
+           set({ user: res.data.user });
+          } catch (error) {
+          console.log("checkAuth error:", error?.response?.data || error.message);
+           set({ user: null });
+          } finally {
+          set({ isCheckingAuth: false });
+          }
+          }
      ,
 
      logout: async()=>{

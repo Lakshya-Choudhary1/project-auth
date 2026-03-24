@@ -52,6 +52,7 @@ app.use(session({
      secret:process.env.SESSION_SECRET,
      resave:false,
      saveUninitialized:false,
+     proxy:true,
      cookie:{
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -74,11 +75,6 @@ if(process.env.NODE_ENV === 'production'){
      return res.sendFile(path.join(__dirname,"../public/index.html"));
      })
 }
-
-app.use(express.static(path.join(__dirname,"../public")))
-     app.use("/",(req, res) => {
-     return res.sendFile(path.join(__dirname,"../public/index.html"));
-     })
 
 
 

@@ -41,9 +41,9 @@ userRouter.get(
 
 userRouter.get(
      "/oauth/google/callback",
-     passport.authenticate("google", { failureRedirect: "/ login", session: true }),
+     passport.authenticate("google", { session: true }),
      (req,res)=>{
-          
+          if(!req.user) return res.redirect("/login");
          return res.redirect("/")
      }
 )

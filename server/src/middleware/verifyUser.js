@@ -6,6 +6,9 @@ const verifyUser = async (req, res, next) => {
 
     // Passport session-based auth
     if (req.isAuthenticated?.() && req.user) {
+      console.log("before redirect req.user:", req.user);
+    console.log("session:", req.session);
+    console.log("sessionID:", req.sessionID);
       return next();
     }
 

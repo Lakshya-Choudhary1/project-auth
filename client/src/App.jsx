@@ -13,43 +13,30 @@ const Signup = lazy(() => import("./pages/Signup.jsx"));
 
 const ProtectedRoute = ({ children, user, isCheckingAuth }) => {
   if (isCheckingAuth) return <LazyLoading />;
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!user.emailVerified) {
-    return <Navigate to="/emailVerification" replace />;
-  }
-
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.emailVerified) return <Navigate to="/emailVerification" replace />;
   return children;
 };
 
 const RedirectIfAuthenticated = ({ children, user, isCheckingAuth }) => {
   if (isCheckingAuth) return <LazyLoading />;
-
-  if (user && user.emailVerified) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (user && !user.emailVerified) {
-    return <Navigate to="/emailVerification" replace />;
-  }
-
+  if (user && user.emailVerified) return <Navigate to="/" replace />;
+  if (user && !user.emailVerified) return <Navigate to="/emailVerification" replace />;
   return children;
 };
 
+
 const App = () => {
-  const { user, checkAuth, isCheckingAuth } = useUserStore();
+  const user = useUserStore((state) => state.user);
+  const isCheckingAuth = useUserStore((state) => state.isCheckingAuth);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    useUserStore.getState().checkAuth();
+  }, []);
 
   return (
     <>
       <Toaster />
-
       <Suspense fallback={<LazyLoading />}>
         <Routes>
           <Route
@@ -60,7 +47,6 @@ const App = () => {
               </RedirectIfAuthenticated>
             }
           />
-
           <Route
             path="/signup"
             element={
@@ -69,7 +55,6 @@ const App = () => {
               </RedirectIfAuthenticated>
             }
           />
-
           <Route
             path="/emailVerification"
             element={
@@ -84,10 +69,8 @@ const App = () => {
               )
             }
           />
-
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword/:resetToken" element={<ResetPassword />} />
-
           <Route
             path="/"
             element={
@@ -96,7 +79,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
