@@ -3,10 +3,6 @@ import userModel from "../models/user.model.js";
 
 const verifyUser = async (req, res, next) => {
   try {
-    console.log("isAuthenticated:", req.isAuthenticated?.());
-    console.log("req.user:", req.user);
-    console.log("sessionID:", req.sessionID);
-    console.log("cookies:", req.cookies);
 
     // Passport session-based auth
     if (req.isAuthenticated?.() && req.user) {
