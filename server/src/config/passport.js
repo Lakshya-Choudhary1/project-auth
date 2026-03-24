@@ -4,7 +4,7 @@ import userModel from "../models/user.model.js";
 import dotenv from 'dotenv'
 dotenv.config();
 
-const uri = process.env.NODE_ENV === "production" ? "/api/user/oauth/google/callback" : "http://localhost:3000/api/user/oauth/google/callback";
+const uri = process.env.NODE_ENV === "production" ? "https://project-auth-wepq.onrender.com/api/user/oauth/google/callback" : "http://localhost:3000/api/user/oauth/google/callback";
 
 passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
