@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {} from "lucide-react"
+import {} from "react-icons"
 
 const uri = import.meta.env.MODE === "production" ? "/api/user/oauth/google" : "http://localhost:3000/api/user/oauth/google";
 
