@@ -20,8 +20,8 @@ const Signup = () => {
 
 
         <div>
-          <a href="">
-            
+          <a href={"http://localhost:3000/api/user/oauth/google"} className='text-white'>
+              google
           </a>
         </div>
       </div>
