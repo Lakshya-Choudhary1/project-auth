@@ -43,8 +43,9 @@ userRouter.get(
      "/oauth/google/callback",
      passport.authenticate("google", { session: true }),
      (req,res)=>{
+          const url = process.env.NODE_ENV === "production" ? "/" : "http://localhost:5173" ;
           if(!req.user) return res.redirect("/login");
-         return res.redirect("/")
+         return res.redirect(url)
      }
 )
 
